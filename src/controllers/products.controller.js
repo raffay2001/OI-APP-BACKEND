@@ -11,7 +11,6 @@ const createProduct = async (req, res) => {
       description,
     });
     await newProduct.save();
-    console.log(__dirname + "..")
     const srcDir = path.join(__dirname, "../");
     const newImage = new imageModel({
       img: {
