@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
+const { generateAuthTokens } = require('../services/token.service');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -47,6 +48,16 @@ const verifyEmail = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const facebookOAuth = async (req, res) => {
+  if (!req.user) {
+    return res.send(401, 'User not authenticated');
+  }
+
+  req.token = await generateAuthTokens(req.user);
+  res.setHeader('x-auth-token', req.token.access.token);
+  res.status(200).json(req.token);
+};
+
 module.exports = {
   register,
   login,
@@ -56,4 +67,5 @@ module.exports = {
   resetPassword,
   sendVerificationEmail,
   verifyEmail,
+  facebookOAuth,
 };
