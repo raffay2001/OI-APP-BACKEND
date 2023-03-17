@@ -26,6 +26,14 @@ const classSchema = new Schema({
     type: String,
     required: true,
   },
+  group: {
+    type: String,
+    required: true,
+  },
+  filename: {
+    type: String,
+    required: true,
+  },
   thumbnail: {
     data: Buffer,
     contentType: String,

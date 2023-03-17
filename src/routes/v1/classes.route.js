@@ -19,6 +19,9 @@ router.post(
   upload.fields([{ name: 'video' }, { name: 'thumbnail' }, { name: 'title' }, { name: 'description' }]),
   classesController.createClass
 );
+router.get('/', classesController.getAllClasses);
+router.get('/:classId', classesController.getClassById);
 router.get('/:className', classesController.getClass);
+router.get('/:group', classesController.getClassByGroup);
 
 module.exports = router;

@@ -15,7 +15,7 @@ mongoose.connection.on('connected', () => {
 
 const createClass = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, group } = req.body;
     console.log(req.files);
 
     const srcDir = path.join(__dirname, '../');
@@ -23,10 +23,12 @@ const createClass = async (req, res) => {
     const newClass = new Class({
       title,
       description,
+      group,
       thumbnail: {
         data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['thumbnail'][0].filename)),
         contentType: 'image/png',
       },
+      filename: req.files['video'][0].originalname,
     });
 
     // Save the Class object to the database
@@ -99,4 +101,39 @@ const getClass = async (req, res) => {
   });
 };
 
-module.exports = { createClass, getClass };
+const getAllClasses = async (req, res) => {
+  try {
+    const allClasses = await Class.find({});
+    res.status(200).send(allClasses);
+  } catch (e) {
+    res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+const getClassById = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const classDoc = await Class.findById(classId);
+    res.status(200).send(classDoc);
+  } catch (e) {
+    res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+const getClassByGroup = async (req, res) => {
+  try {
+    const { group } = req.params;
+    const classDoc = await Class.find({ group: group });
+    res.status(200).send(classDoc);
+  } catch (e) {
+    res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+module.exports = { createClass, getClass, getAllClasses, getClassById, getClassByGroup };
