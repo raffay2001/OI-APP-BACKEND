@@ -1,8 +1,9 @@
 const { productModel, imageModel } = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
+const catchAsync = require('../utils/catchAsync');
 
-const createProduct = async (req, res) => {
+const createProduct = catchAsync(async (req, res) => {
   try {
     const { title, tagline, description } = req.body;
     const newProduct = new productModel({
@@ -11,20 +12,21 @@ const createProduct = async (req, res) => {
       description,
     });
     await newProduct.save();
-    const srcDir = path.join(__dirname, "../");
+    const srcDir = path.join(__dirname, '../');
     const newImage = new imageModel({
       img: {
-        data: fs.readFileSync(path.join( srcDir + '/uploads/' + req.file.filename)),
+        data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['image'][0].filename)),
         contentType: 'image/png',
       },
       product: newProduct._id,
     });
     await newImage.save();
-    res.status(201).json({newProduct, images: [newImage] });
+    const response = await productModel.findOne({ _id: newProduct._id });
+    res.status(201).json({ response, images: [newImage] });
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
-};
+});
 
 const getProducts = async (req, res) => {
   const products = await productModel.aggregate([

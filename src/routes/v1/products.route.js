@@ -14,7 +14,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const router = express.Router();
-router.post('/', upload.single('image'), productsController.createProduct);
+router.post(
+  '/',
+  upload.fields([{ name: 'image' }, { name: 'title' }, { name: 'tagline' }, { name: 'description' }]),
+  productsController.createProduct
+);
 router.get('/', productsController.getProducts);
 
 module.exports = router;

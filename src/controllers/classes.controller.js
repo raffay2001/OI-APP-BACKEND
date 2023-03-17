@@ -1,0 +1,102 @@
+const { Class } = require('../models/class.model');
+const { createReadStream } = require('fs');
+const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
+
+let bucket;
+let db;
+mongoose.connection.on('connected', () => {
+  db = mongoose.connections[0].db;
+  bucket = new mongoose.mongo.GridFSBucket(db, {
+    bucketName: 'videos',
+  });
+});
+
+const createClass = async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    console.log(req.files);
+
+    const srcDir = path.join(__dirname, '../');
+    // Create a new Class object
+    const newClass = new Class({
+      title,
+      description,
+      thumbnail: {
+        data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['thumbnail'][0].filename)),
+        contentType: 'image/png',
+      },
+    });
+
+    // Save the Class object to the database
+    const savedClass = await newClass.save();
+
+    // Create a new GridFSBucket object to handle video uploads
+
+    // Create a readable stream from the uploaded file
+    const stream = createReadStream(path.join(srcDir + '/uploads/' + req.files['video'][0].filename));
+
+    // Create a new GridFS file with the correct class ID
+    const uploadStream = bucket.openUploadStreamWithId(savedClass._id, req.files['video'][0].originalname);
+
+    // Pipe the stream to the GridFS file
+    stream.pipe(uploadStream);
+
+    // Wait for the upload to finish
+    await new Promise((resolve, reject) => {
+      uploadStream.on('error', reject);
+      uploadStream.on('finish', resolve);
+    });
+
+    // Respond with success message
+    res.send('Class and video uploaded successfully!');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Something went wrong');
+  }
+};
+
+const getClass = async (req, res) => {
+  const { className } = req.params;
+  // Check for range headers to find our start time
+  const range = req.headers.range;
+  if (!range) {
+    res.status(400).send('Requires Range header');
+  }
+
+  // GridFS Collection
+  db.collection('videos.files').findOne({ filename: className }, (err, video) => {
+    console.log(video);
+    if (!video) {
+      res.status(404).json({ message: 'No video found' });
+      return;
+    }
+
+    // Create response headers
+    const videoSize = video.length;
+    const start = Number(range.replace(/\D/g, ''));
+    const end = videoSize - 1;
+
+    const contentLength = end - start + 1;
+    const headers = {
+      'Content-Range': `bytes ${start}-${end}/${videoSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': contentLength,
+      'Content-Type': 'video/mp4',
+    };
+
+    // HTTP Status 206 for Partial Content
+    res.writeHead(206, headers);
+    // // Get the bucket and download stream from GridFS
+    // const bucket = new mongodb.GridFSBucket(db);
+    const downloadStream = bucket.openDownloadStreamByName(className, {
+      start,
+    });
+
+    // Finally pipe video to response
+    downloadStream.pipe(res);
+  });
+};
+
+module.exports = { createClass, getClass };

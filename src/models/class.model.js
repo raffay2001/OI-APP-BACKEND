@@ -5,13 +5,13 @@ const { Schema } = mongoose;
 const videoSchema = new Schema({
   video: {
     type: Buffer,
-    required: true
+    required: true,
   },
   class: {
     type: Schema.Types.ObjectId,
     ref: 'Class',
-    required: true
-  }
+    required: true,
+  },
 });
 
 const Video = mongoose.model('Video', videoSchema);
@@ -20,12 +20,16 @@ const Video = mongoose.model('Video', videoSchema);
 const classSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
+  thumbnail: {
+    data: Buffer,
+    contentType: String,
+  },
 });
 
 const Class = mongoose.model('Class', classSchema);
