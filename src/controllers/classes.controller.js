@@ -62,10 +62,6 @@ const createClass = async (req, res) => {
 const getClass = async (req, res) => {
   const { className } = req.params;
   // Check for range headers to find our start time
-  const range = req.headers.range;
-  if (!range) {
-    res.status(400).send('Requires Range header');
-  }
 
   // GridFS Collection
   db.collection('videos.files').findOne({ filename: className }, (err, video) => {
@@ -77,7 +73,7 @@ const getClass = async (req, res) => {
 
     // Create response headers
     const videoSize = video.length;
-    const start = Number(range.replace(/\D/g, ''));
+    const start = 0;
     const end = videoSize - 1;
 
     const contentLength = end - start + 1;

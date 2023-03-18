@@ -52,7 +52,6 @@ const facebookOAuth = async (req, res) => {
   if (!req.user) {
     return res.send(401, 'User not authenticated');
   }
-
   req.token = await generateAuthTokens(req.user);
   res.setHeader('x-auth-token', req.token.access.token);
   res.status(200).json(req.token);

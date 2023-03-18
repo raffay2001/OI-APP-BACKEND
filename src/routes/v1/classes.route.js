@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const classesController = require('../../controllers/classes.controller');
+const auth = require('../../middlewares/auth');
 
 // multer code
 const storage = multer.diskStorage({
@@ -16,12 +17,13 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 router.post(
   '/',
-  upload.fields([{ name: 'video' }, { name: 'thumbnail' }, { name: 'title' }, { name: 'description' }]),
+  auth(),
+  upload.fields([{ name: 'video' }, { name: 'thumbnail' }, { name: 'title' }, { name: 'description' }, { name: 'group' }]),
   classesController.createClass
 );
-router.get('/', classesController.getAllClasses);
-router.get('/:classId', classesController.getClassById);
-router.get('/:className', classesController.getClass);
-router.get('/:group', classesController.getClassByGroup);
+router.get('/', auth(), classesController.getAllClasses);
+router.get('/:classId', auth(), classesController.getClassById);
+router.get('/stream/:className', auth(), classesController.getClass);
+router.get('/group/:group', auth(), classesController.getClassByGroup);
 
 module.exports = router;
