@@ -18,7 +18,7 @@ const router = express.Router();
 router.post(
   '/',
   auth('forAdmin'),
-  upload.fields([{ name: 'image' }, { name: 'title' }, { name: 'tagline' }, { name: 'description' }]),
+  upload.fields([{ name: 'image' }, { name: 'title' }, { name: 'tagline' }, { name: 'description' }, { name: 'price' }]),
   productsController.createProduct
 );
 router.get('/', auth(), productsController.getProducts);
