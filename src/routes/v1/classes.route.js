@@ -17,7 +17,7 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 router.post(
   '/',
-  auth(),
+  auth('forAdmin'),
   upload.fields([{ name: 'video' }, { name: 'thumbnail' }, { name: 'title' }, { name: 'description' }, { name: 'group' }]),
   classesController.createClass
 );

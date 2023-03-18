@@ -17,7 +17,7 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 router.post(
   '/',
-  auth(),
+  auth('forAdmin'),
   upload.fields([{ name: 'image' }, { name: 'title' }, { name: 'tagline' }, { name: 'description' }]),
   productsController.createProduct
 );
