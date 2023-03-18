@@ -1,4 +1,4 @@
-# RESTful API Node Server Boilerplate
+<!-- # RESTful API Node Server Boilerplate
 
 [![Build Status](https://travis-ci.org/hagopj13/node-express-boilerplate.svg?branch=master)](https://travis-ci.org/hagopj13/node-express-boilerplate)
 [![Coverage Status](https://coveralls.io/repos/github/hagopj13/node-express-boilerplate/badge.svg?branch=master)](https://coveralls.io/github/hagopj13/node-express-boilerplate?branch=master)
@@ -437,4 +437,4 @@ Contributions are more than welcome! Please check out the [contributing guide](C
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) -->
