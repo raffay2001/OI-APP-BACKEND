@@ -2,6 +2,8 @@ const { productModel, imageModel } = require('../models/product.model');
 const fs = require('fs');
 const path = require('path');
 const catchAsync = require('../utils/catchAsync');
+const ApiError = require('../utils/ApiError');
+const httpStatus = require('http-status');
 
 const createProduct = catchAsync(async (req, res) => {
   try {
@@ -29,20 +31,38 @@ const createProduct = catchAsync(async (req, res) => {
 });
 
 const getProducts = async (req, res) => {
-  const products = await productModel.aggregate([
-    {
-      $lookup: {
-        from: 'images',
-        localField: '_id',
-        foreignField: 'product',
-        as: 'results',
+  try {
+    const products = await productModel.aggregate([
+      {
+        $lookup: {
+          from: 'images',
+          localField: '_id',
+          foreignField: 'product',
+          as: 'results',
+        },
       },
-    },
-  ]);
-  res.json(products);
+    ]);
+    res.status(200).json(products);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+const deleteProductById = async (req, res) => {
+  try {
+    const product = await productModel.findById(req.params.productId);
+    if (!product) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No Product Found');
+    }
+    product.remove();
+    res.status(httpStatus.NO_CONTENT).json();
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 module.exports = {
   createProduct,
   getProducts,
+  deleteProductById,
 };

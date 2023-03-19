@@ -9,6 +9,7 @@ const register = {
     username: Joi.string(),
     address: Joi.string(),
     phone: Joi.string(),
+    role: Joi.string()
   }),
 };
 
