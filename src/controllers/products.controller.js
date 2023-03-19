@@ -12,14 +12,14 @@ const createProduct = catchAsync(async (req, res) => {
       title,
       tagline,
       description,
-      price
+      price,
     });
     await newProduct.save();
     const srcDir = path.join(__dirname, '../');
     const newImage = new imageModel({
       img: {
         data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['image'][0].filename)),
-        contentType: 'image/png',
+        contentType: 'image/*',
       },
       product: newProduct._id,
     });
@@ -62,8 +62,38 @@ const deleteProductById = async (req, res) => {
   }
 };
 
+const getProductById = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await productModel.findById(productId);
+    if (!product) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
+    }
+    return res.json(product);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+const updateProductById = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const product = await productModel.findById(productId);
+    if (!product) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
+    }
+    Object.assign(product, req.body);
+    await product.save();
+    res.json(product);
+  } catch (e) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: e.message });
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
   deleteProductById,
+  getProductById,
+  updateProductById,
 };
