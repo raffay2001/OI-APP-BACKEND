@@ -69,7 +69,8 @@ const getProductById = async (req, res) => {
     if (!product) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
     }
-    return res.json(product);
+    const image = await imageModel.findOne({ product: product._id });
+    return res.json({ productData: product, productImage: image });
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
@@ -79,12 +80,22 @@ const updateProductById = async (req, res) => {
   try {
     const { productId } = req.params;
     const product = await productModel.findById(productId);
-    if (!product) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
+    const image = await imageModel.findOne({ product: productId });
+    if (!product || !image) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Product or image not found.');
     }
     Object.assign(product, req.body);
     await product.save();
-    res.json(product);
+    const srcDir = path.join(__dirname, '../');
+    const imgObject = {
+      img: {
+        data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['image'][0].filename)),
+        contentType: 'image/*',
+      },
+    };
+    Object.assign(image, imgObject);
+    image.save();
+    res.json({ productData: product, productImage: image });
   } catch (e) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: e.message });
   }
