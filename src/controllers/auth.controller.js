@@ -20,7 +20,7 @@ const login = catchAsync(async (req, res) => {
 
 const logout = catchAsync(async (req, res) => {
   await authService.logout(req.body.refreshToken);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.json({ message: 'logged out' });
 });
 
 const refreshTokens = catchAsync(async (req, res) => {

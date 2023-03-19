@@ -7,11 +7,12 @@ const httpStatus = require('http-status');
 
 const createProduct = catchAsync(async (req, res) => {
   try {
-    const { title, tagline, description } = req.body;
+    const { title, tagline, description, price } = req.body;
     const newProduct = new productModel({
       title,
       tagline,
       description,
+      price
     });
     await newProduct.save();
     const srcDir = path.join(__dirname, '../');
