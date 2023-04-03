@@ -34,12 +34,23 @@ const classSchema = new Schema({
     type: String,
     required: true,
   },
-  thumbnail: {
+  // thumbnail: {
+  //   data: Buffer,
+  //   contentType: String,
+  // },
+});
+
+
+// Define the Class model
+const ThumbnailSchema = new Schema({
+  thumbnailpic: {
     data: Buffer,
     contentType: String,
   },
-});
+  class: { type: Schema.Types.ObjectId, ref: 'Class' },
 
+})
 const Class = mongoose.model('Class', classSchema);
+const Thumbnail = mongoose.model('Thumbnail', ThumbnailSchema);
 
-module.exports = { Class, Video };
+module.exports = { Class, Video, Thumbnail };
