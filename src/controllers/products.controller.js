@@ -4,6 +4,7 @@ const path = require('path');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const { ObjectId } = require('mongodb');
 
 const createProduct = catchAsync(async (req, res) => {
   try {
@@ -65,12 +66,25 @@ const deleteProductById = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    const product = await productModel.findById(productId);
+    const product = await productModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(productId),
+        },
+      },
+      {
+        $lookup: {
+          from: 'images',
+          localField: '_id',
+          foreignField: 'product',
+          as: 'image',
+        },
+      },
+    ]);
     if (!product) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
     }
-    const image = await imageModel.findOne({ product: product._id });
-    return res.json({ productData: product, productImage: image });
+    return res.json(product);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }
