@@ -25,10 +25,6 @@ const createClass = async (req, res) => {
       title,
       description,
       group,
-      // thumbnail: {
-      //   data: fs.readFileSync(path.join(srcDir + '/uploads/' + req.files['thumbnail'][0].filename)),
-      //   contentType: 'image/*',
-      // },
       filename: req.files['video'][0].originalname,
     });
     const newThumbnail = new Thumbnail({
@@ -43,7 +39,6 @@ const createClass = async (req, res) => {
     // Save the Class object to the database
     const savedClass = await newClass.save();
 
-    // Create a new GridFSBucket object to handle video uploads
 
     // Create a readable stream from the uploaded file
     const stream = createReadStream(path.join(srcDir + '/uploads/' + req.files['video'][0].filename));
@@ -109,17 +104,12 @@ var ObjectId = require('mongodb').ObjectID;
 const getAllClasses = async (req, res) => {
   try {
     // const allClasses = await Class.find({}).skip(15).limit(10);
-    const allClasses = await Class.aggregate([
-      {
-        '$match': {
-          '_id': new ObjectId('642a02a700dfc725d0795328')
-        }
-      }, {
+    const allClasses = await Class.aggregate([ {
         '$lookup': {
           'from': 'thumbnails', 
           'localField': '_id', 
           'foreignField': 'class', 
-          'as': 'result'
+          'as': 'thumbnails'
         }
       }
     ])
@@ -134,8 +124,21 @@ const getAllClasses = async (req, res) => {
 const getClassById = async (req, res) => {
   try {
     const { classId } = req.params;
-    const classDoc = await Class.findById(classId);
-    res.status(200).send(classDoc);
+    const classDoc = await Class.aggregate([
+      {
+        '$match': {
+          '_id': new ObjectId(classId)
+        }
+      }, {
+        '$lookup': {
+          'from': 'thumbnails', 
+          'localField': '_id', 
+          'foreignField': 'class', 
+          'as': 'thumbnails'
+        }
+      }
+    ]);
+    res.status(200).send(classDoc[0]);
   } catch (e) {
     res.status(500).json({
       message: e.message,
