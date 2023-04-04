@@ -68,23 +68,22 @@ const getProductById = async (req, res) => {
     const { productId } = req.params;
     const product = await productModel.aggregate([
       {
-        $match: {
-          _id: new ObjectId(productId),
-        },
-      },
-      {
-        $lookup: {
-          from: 'images',
-          localField: '_id',
-          foreignField: 'product',
-          as: 'image',
-        },
-      },
+        '$match': {
+          '_id': new ObjectId(productId)
+        }
+      }, {
+        '$lookup': {
+          'from': 'images',
+          'localField': '_id',
+          'foreignField': 'product',
+          'as': 'image'
+        }
+      }
     ]);
     if (!product) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Product not found.');
     }
-    return res.json(product);
+    return res.json(product[0]);
   } catch (e) {
     res.status(500).json({ message: e.message });
   }

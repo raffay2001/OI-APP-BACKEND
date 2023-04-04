@@ -3,6 +3,7 @@ const { createReadStream } = require('fs');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
+const { ObjectId } = require('mongodb');
 
 let bucket;
 let db;
@@ -20,7 +21,7 @@ const createClass = async (req, res) => {
 
     const srcDir = path.join(__dirname, '../');
     // Create a new Class object
-    console.log(req.files)
+    console.log(req.files);
     const newClass = new Class({
       title,
       description,
@@ -61,7 +62,7 @@ const createClass = async (req, res) => {
     });
 
     // Respond with success message
-    res.json({message: 'Class and video uploaded successfully!'});
+    res.json({ message: 'Class and video uploaded successfully!' });
   } catch (err) {
     console.error(err);
     res.status(500).send('Something went wrong');
@@ -105,24 +106,18 @@ const getClass = async (req, res) => {
     downloadStream.pipe(res);
   });
 };
-var ObjectId = require('mongodb').ObjectID;
 const getAllClasses = async (req, res) => {
   try {
-    // const allClasses = await Class.find({}).skip(15).limit(10);
     const allClasses = await Class.aggregate([
       {
-        '$match': {
-          '_id': new ObjectId('642a02a700dfc725d0795328')
-        }
-      }, {
-        '$lookup': {
-          'from': 'thumbnails', 
-          'localField': '_id', 
-          'foreignField': 'class', 
-          'as': 'result'
-        }
-      }
-    ])
+        $lookup: {
+          from: 'thumbnails',
+          localField: '_id',
+          foreignField: 'class',
+          as: 'result',
+        },
+      },
+    ]);
     res.status(200).send(allClasses);
   } catch (e) {
     res.status(500).json({
@@ -134,8 +129,21 @@ const getAllClasses = async (req, res) => {
 const getClassById = async (req, res) => {
   try {
     const { classId } = req.params;
-    const classDoc = await Class.findById(classId);
-    res.status(200).send(classDoc);
+    const classDoc = await Class.aggregate([
+      {
+        '$match': {
+          '_id': new ObjectId(classId)
+        }
+      }, {
+        '$lookup': {
+          'from': 'thumbnails',
+          'localField': '_id',
+          'foreignField': 'class',
+          'as': 'thumbnails'
+        }
+      }
+    ]);
+    res.status(200).send(classDoc[0]);
   } catch (e) {
     res.status(500).json({
       message: e.message,
