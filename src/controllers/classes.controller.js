@@ -102,13 +102,7 @@ const getClass = async (req, res) => {
 };
 const getAllClasses = async (req, res) => {
   try {
-    const { classId } = req.params;
     const allClasses = await Class.aggregate([
-      {
-        $match: {
-          _id: new ObjectId(classId),
-        },
-      },
       {
         $lookup: {
           from: 'thumbnails',
